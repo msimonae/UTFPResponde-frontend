@@ -5,7 +5,7 @@ import requests
 st.set_page_config(page_title="UTFPResponde", page_icon="🎓", layout="centered")
 
 # URL da sua API hospedada no Render (Substitua após o deploy)
-API_URL = "https://utfpresponde.onrender.com"
+API_URL = "https://utfpresponde.onrender.com/chat"
 
 st.title("🎓 UTFPResponde")
 st.markdown("### Assistente Inteligente do PPGI-UTFPR")
