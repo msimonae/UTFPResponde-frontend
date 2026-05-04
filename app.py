@@ -7,7 +7,8 @@ import uuid
 st.set_page_config(page_title="UTFPResponde V13", page_icon="🎓", layout="centered")
 
 # URL da sua API hospedada no Render (Certifique-se de que é a URL correta do backend)
-API_URL = "https://utfpresponde.onrender.com/chat"
+#API_URL = "https://utfpresponde.onrender.com/chat"
+API_URL = "https://utfpresponde-backend-814505118980.europe-west1.run.app/chat"
 
 # Cabeçalhos alinhados com a narrativa da dissertação
 st.title("🎓 UTFPResponde (V13)")
