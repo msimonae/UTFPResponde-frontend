@@ -11,7 +11,7 @@ st.set_page_config(page_title="UTFPResponde V13", page_icon="🎓", layout="cent
 API_URL = "https://utfpresponde-814505118980.us-central1.run.app/chat"
 
 # Cabeçalhos alinhados com a narrativa da dissertação
-st.title("🎓 UTFPResponde (V13)")
+st.title("🎓 UTFPResponde")
 st.markdown("### Assistente Agentivo Híbrido (Vector-to-Graph) - PPGI-UTFPR")
 
 # 1. Inicialização de Variáveis de Estado (Memória de Sessão)
@@ -37,7 +37,7 @@ if user_query:
     
     # Chama a API Restful (Backend)
     with st.chat_message("assistant"):
-        with st.spinner("Consultando normativas no Grafo de Conhecimento (V13)..."):
+        with st.spinner("Consultando normativas no Grafo de Conhecimento ..."):
             try:
                 # O Payload agora envia a query E a sessão para o Agente ReAct manter o contexto
                 payload = {
