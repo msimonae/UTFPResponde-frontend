@@ -13,6 +13,7 @@ API_URL = "https://utfpresponde-814505118980.us-central1.run.app/chat"
 # Cabeçalhos alinhados com a narrativa da dissertação
 st.title("🎓 UTFPResponde")
 st.markdown("### Assistente Agentivo Híbrido (Vector-to-Graph) - PPGI-UTFPR")
+st.markdown("### Poderia fazer uma pergunta por vez ?")
 
 # 1. Inicialização de Variáveis de Estado (Memória de Sessão)
 if "session_id" not in st.session_state:
