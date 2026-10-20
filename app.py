@@ -1,4 +1,5 @@
-# app.py (Frontend Streamlit - UTFPResponde V23)
+# app.py (Frontend Streamlit de Produção - UTFPResponde V23)
+import os
 import streamlit as st
 import requests
 import uuid
@@ -10,8 +11,12 @@ st.set_page_config(
     layout="centered"
 )
 
-# URL da API no Google Cloud Run (permite sobrescrever via Secrets/Variável de Ambiente se necessário)
-API_URL = st.secrets.get("API_URL", "https://utfpresponde-814505118980.us-central1.run.app/chat") if hasattr(st, "secrets") and "API_URL" in st.secrets else "https://utfpresponde-814505118980.us-central1.run.app/chat"
+# Leitura resiliente da URL da API no Google Cloud Run (sem risco de erro caso secrets.toml não exista)
+DEFAULT_API_URL = "https://utfpresponde-814505118980.us-central1.run.app/chat"
+try:
+    API_URL = st.secrets.get("API_URL", os.environ.get("API_URL", DEFAULT_API_URL))
+except Exception:
+    API_URL = os.environ.get("API_URL", DEFAULT_API_URL)
 
 # 1. Inicialização de Variáveis de Estado (Memória de Sessão)
 if "session_id" not in st.session_state:
@@ -47,7 +52,7 @@ st.caption("Arquitetura Híbrida Vector-to-Graph com Aterramento Normativo e Abs
 # 2. Exibe o histórico da conversa e mantém os botões de feedback funcionais
 for idx, msg in enumerate(st.session_state.chat_history):
     with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+        st.markdown(msg["content"])
         # Exibe botões de feedback para respostas geradas pelo assistente (exceto a saudação inicial)
         if msg["role"] == "assistant" and idx > 0:
             col1, col2, _ = st.columns([1, 1, 10])
@@ -63,7 +68,7 @@ user_query = st.chat_input("Digite sua dúvida acadêmica aqui (ex: prazos, conv
 
 if user_query:
     # Exibe imediatamente a pergunta do usuário
-    st.chat_message("user").write(user_query)
+    st.chat_message("user").markdown(user_query)
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     
     # Chama a API Restful (Backend no Cloud Run)
@@ -75,12 +80,12 @@ if user_query:
                     "session_id": st.session_state.session_id
                 }
                 
-                # Timeout de 90s para absorver eventual Cold Start do Cloud Run
+                # Timeout de 90s para absorver eventual Cold Start + Lazy Load do Cloud Run
                 resposta_api = requests.post(API_URL, json=payload, timeout=90)
                 resposta_api.raise_for_status()
                 
                 texto_resposta = resposta_api.json().get("answer", "Erro ao recuperar resposta do agente.")
-                st.write(texto_resposta)
+                st.markdown(texto_resposta)
                 
                 # Salva a resposta no histórico e atualiza para renderizar os botões de feedback
                 st.session_state.chat_history.append({"role": "assistant", "content": texto_resposta})
@@ -89,4 +94,15 @@ if user_query:
             except requests.exceptions.Timeout:
                 st.error("⏳ O servidor demorou mais que o esperado (possível inicialização a frio no Cloud Run). Por favor, envie a pergunta novamente.")
             except requests.exceptions.RequestException as e:
-                st.error(f"⚠️ Erro de comunicação com o servidor Backend: {e}")
+                detalhe_erro = ""
+                if getattr(e, "response", None) is not None:
+                    try:
+                        detalhe_erro = e.response.json().get("detail", e.response.text)
+                    except Exception:
+                        detalhe_erro = e.response.text
+                if "402" in str(e) or "402" in str(detalhe_erro) or "Insufficient credits" in str(detalhe_erro):
+                    st.error("⚠️ **Erro 402 (Créditos Insuficientes na OpenRouter):** Adicione créditos em https://openrouter.ai/settings/credits.")
+                elif detalhe_erro:
+                    st.error(f"⚠️ Erro retornado pelo Backend: {detalhe_erro}")
+                else:
+                    st.error(f"⚠️ Erro de comunicação com o servidor Backend: {e}")
